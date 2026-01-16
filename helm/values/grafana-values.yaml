@@ -1,0 +1,118 @@
+# Chart - grafana/grafana
+
+replicas: 1
+
+persistence:
+  enabled: true
+  size: 1Gi
+  storageClassName:  standard
+
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
+    cpu: "200m"
+
+admin:
+  existingSecret: monitoring-secrets
+  userKey: admin-user
+  passwordKey: admin-password
+
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        uid: prometheus
+        url: http://prometheus-server.monitoring.svc.cluster.local:80
+        access: proxy
+        isDefault: true
+        editable: true
+        jsonData:
+          timeInterval: "15s"
+
+      - name: Loki
+        type: loki
+        uid:  loki
+        url: http://loki.monitoring.svc.cluster.local:3100
+        access: proxy
+        editable: true
+        jsonData:
+          derivedFields:
+            - datasourceUid: tempo
+              matcherRegex: "traceId=(\\w+)"
+              name: TraceID
+              url: "$${__value.raw}"
+
+      - name: Tempo
+        type: tempo
+        uid: tempo
+        url: http://tempo.monitoring.svc.cluster.local:3100
+        access: proxy
+        editable: true
+        jsonData:
+          httpMethod: GET
+          tracesToLogs:
+            datasourceUid: loki
+            tags:  ['service.name', 'k8s.pod.name']
+            mappedTags: [{ key: 'service.name', value: 'service_name' }]
+            mapTagNamesEnabled: true
+            spanStartTimeShift: '-1h'
+            spanEndTimeShift: '1h'
+            filterByTraceID: true
+            filterBySpanID: false
+          tracesToMetrics:
+            datasourceUid: prometheus
+            tags: [{ key: 'service.name', value: 'service' }]
+            queries:
+              - name: 'Request rate'
+                query: 'sum(rate(http_server_requests_seconds_count{$$__tags}[5m]))'
+              - name: 'Request latency (p95)'
+                query: 'histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{$$__tags}[5m])) by (le))'
+          serviceMap:
+            datasourceUid:  prometheus
+          nodeGraph:
+            enabled: true
+          lokiSearch:
+            datasourceUid: loki
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/default
+
+dashboards:
+  default:
+    spring-boot-observability:
+      gnetId:  19004
+      revision: 1
+      datasource: Prometheus
+    jvm-micrometer:
+      gnetId: 4701
+      revision: 1
+      datasource: Prometheus
+    kubernetes-pods:
+      gnetId: 6417
+      revision: 1
+      datasource: Prometheus
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled:  true
+  ingressClassName: nginx
+  hosts:
+    - grafana.local
