@@ -14,9 +14,9 @@ tempo:
       path: /ready
       port: 3200
       scheme: HTTP
-    initialDelaySeconds: 45
+    initialDelaySeconds: 60
     periodSeconds: 10
-    timeoutSeconds: 5
+    timeoutSeconds: 15
     failureThreshold: 3
 
   livenessProbe:
@@ -24,10 +24,10 @@ tempo:
       path: /ready
       port: 3200
       scheme: HTTP
-    initialDelaySeconds: 60
-    periodSeconds: 15
-    timeoutSeconds: 5
-    failureThreshold: 3
+    initialDelaySeconds: 90
+    periodSeconds: 20
+    timeoutSeconds: 10
+    failureThreshold: 5
 
   receivers:
     otlp:
@@ -39,10 +39,10 @@ tempo:
 
   resources:
     requests:
-      memory: "256Mi"
+      memory: "512Mi"
       cpu: "100m"
     limits:
-      memory: "512Mi"
+      memory: "2Gi"
       cpu: "300m"
 
 persistence:
