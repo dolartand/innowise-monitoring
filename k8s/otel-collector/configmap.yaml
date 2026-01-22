@@ -33,8 +33,8 @@ data:
         tls:
           insecure: true
           
-      otlp/tempo:
-        endpoint: http://tempo.monitoring.svc.cluster.local:4317
+      otlphttp/tempo:
+        endpoint: http://tempo.monitoring.svc.cluster.local:4318
         tls:
           insecure: true
           
@@ -58,7 +58,7 @@ data:
         traces:
           receivers:  [otlp]
           processors: [memory_limiter, batch, resource]
-          exporters: [otlp/tempo]
+          exporters: [otlphttp/tempo]
         metrics:
           receivers: [otlp]
           processors: [memory_limiter, batch, resource]
