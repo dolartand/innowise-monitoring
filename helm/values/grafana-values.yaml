@@ -17,11 +17,11 @@ persistence:
 
 resources:
   requests:
-    memory: "128Mi"
-    cpu: "100m"
-  limits:
-    memory: "256Mi"
+    memory: "512Mi"
     cpu: "200m"
+  limits:
+    memory: "1Gi"
+    cpu: "400m"
 
 admin:
   existingSecret: monitoring-secrets
@@ -58,7 +58,7 @@ datasources:
       - name: Tempo
         type: tempo
         uid: tempo
-        url: http://tempo.monitoring.svc.cluster.local:3100
+        url: http://tempo.monitoring.svc.cluster.local:3200
         access: proxy
         editable: true
         jsonData:
@@ -93,28 +93,19 @@ dashboardProviders:
     providers:
       - name: 'default'
         orgId: 1
-        folder: ''
+        folder: 'Innowise'
         type: file
         disableDeletion: false
         editable: true
+        allowUiUpdates: true
         options:
           path: /var/lib/grafana/dashboards/default
 
-# Auto-loading doesnt work in Belarus (HTTP 451)
-#dashboards:
-#  default:
-#    spring-boot-observability:
-#      gnetId:  19004
-#      revision: 1
-#      datasource: Prometheus
-#    jvm-micrometer:
-#      gnetId: 4701
-#      revision: 1
-#      datasource: Prometheus
-#    kubernetes-pods:
-#      gnetId: 6417
-#      revision: 1
-#      datasource: Prometheus
+extraConfigmapMounts:
+  - name: grafana-dashboards
+    mountPath: /var/lib/grafana/dashboards/default
+    configMap: grafana-dashboards
+    readOnly: true
 
 service:
   type: ClusterIP
