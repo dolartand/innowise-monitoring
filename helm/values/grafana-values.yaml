@@ -2,6 +2,14 @@
 
 replicas: 1
 
+initChownData:
+  enabled: false
+
+securityContext:
+  runAsUser: 472
+  runAsGroup: 472
+  runAsNonRoot: true
+
 persistence:
   enabled: true
   size: 1Gi
@@ -92,20 +100,21 @@ dashboardProviders:
         options:
           path: /var/lib/grafana/dashboards/default
 
-dashboards:
-  default:
-    spring-boot-observability:
-      gnetId:  19004
-      revision: 1
-      datasource: Prometheus
-    jvm-micrometer:
-      gnetId: 4701
-      revision: 1
-      datasource: Prometheus
-    kubernetes-pods:
-      gnetId: 6417
-      revision: 1
-      datasource: Prometheus
+# Auto-loading doesnt work in Belarus (HTTP 451)
+#dashboards:
+#  default:
+#    spring-boot-observability:
+#      gnetId:  19004
+#      revision: 1
+#      datasource: Prometheus
+#    jvm-micrometer:
+#      gnetId: 4701
+#      revision: 1
+#      datasource: Prometheus
+#    kubernetes-pods:
+#      gnetId: 6417
+#      revision: 1
+#      datasource: Prometheus
 
 service:
   type: ClusterIP
