@@ -9,6 +9,26 @@ tempo:
       wal:
         path: /var/tempo/wal
 
+  readinessProbe:
+    httpGet:
+      path: /ready
+      port: 3200
+      scheme: HTTP
+    initialDelaySeconds: 45
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  livenessProbe:
+    httpGet:
+      path: /ready
+      port: 3200
+      scheme: HTTP
+    initialDelaySeconds: 60
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 3
+
   receivers:
     otlp:
       protocols:
@@ -27,7 +47,7 @@ tempo:
 
 persistence:
   enabled: true
-  storage: 2Gi
+  size: 2Gi
   storageClassName: standard
 
 tempoQuery:
