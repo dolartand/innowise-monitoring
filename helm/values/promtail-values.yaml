@@ -1,0 +1,25 @@
+config:
+  clients:
+    - url: http://loki:3100/loki/api/v1/push
+      tenant_id: fake
+
+  snippets:
+    pipelineStages:
+      - cri: {}
+      - regex:
+          expression: '^\[(?P<service_name>[^\,]+),(?P<trace_id>[^\,]*),(?P<span_id>[^\]]*)\]'
+      - labels:
+          service_name:
+          trace_id:
+          span_id:
+
+daemonset:
+  enabled: true
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 64Mi
